@@ -3,31 +3,39 @@ import Container from "./Container.styled";
 import Contacts from "./Contacts/Contacts";
 import Form from "./Form/Form";
 import Filter from "./Filter/Filter";
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 
 export class App extends Component{
-    // state = {
-    //      contacts: [],
-    //     filter: '',
-    // }
     state = {
-        contacts: [
-            {id: 'id-1', name: 'Rosie Simpson', number: '459-12-56'},
-            {id: 'id-2', name: 'Hermione Kline', number: '443-89-12'},
-            {id: 'id-3', name: 'Eden Clements', number: '645-17-79'},
-            {id: 'id-4', name: 'Annie Copeland', number: '227-91-26'},
-        ],
+        contacts: [],
         filter: '',
+    }
+    componentDidMount() {
+        if (localStorage.getItem('contacts')) {
+            this.setState({contacts: JSON.parse(localStorage.getItem('contacts'))})
+        }
+        
+    }
+
+    componentDidUpdate(_, prevState) {
+        if (prevState.contacts.length < this.state.contacts.length) {
+            localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+        }
+        else if (prevState.contacts.length !== this.state.contacts.length) {
+            localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+        }
     }
   
     addNewContact = (obj) => {
         this.setState((prev) => { 
             const isExist = prev.contacts.find((item) => (item.name === obj.name));
             if (isExist) { 
-                alert(`${obj.name} is already in your contacts`)
+                Notify.warning(`${obj.name} is already in your contacts`)
                 return;
             }
-         return prev.contacts.push(obj)
+            Notify.info(`New contact '${obj.name}' is successfully created`);
+            return {contacts: [...prev.contacts, obj] };
         })
     }
     handleChange = (event) => {
@@ -38,6 +46,8 @@ export class App extends Component{
     handleDelete = (event) => {
         const liId = event.target.parentElement.id;
         this.setState((prev) => { 
+            const objToDelete = prev.contacts.find((item) => item.id === liId)
+             Notify.info(`The contact '${objToDelete.name}' is successfully deleted`)
          return {contacts: prev.contacts.filter((item) => (item.id !== liId))}
         })
 
